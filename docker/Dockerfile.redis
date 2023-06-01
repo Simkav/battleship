@@ -1,0 +1,7 @@
+FROM redis:7-alpine
+
+ARG REDIS_PASS=REDISPASSWORD
+ENV REDIS_PASS=${REDIS_PASS}
+COPY redis/redis.conf /usr/local/etc/redis/redis.conf
+
+CMD redis-server /usr/local/etc/redis/redis.conf --requirepass $REDIS_PASS 

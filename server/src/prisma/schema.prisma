@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DB_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id                Int    @id @default(autoincrement())
+  email             String @unique
+  password          String
+  winningGames      Game[] @relation("winner")
+  firstPlayerGames  Game[] @relation("firstPlayer")
+  secondPlayerGames Game[] @relation("secondPlayer")
+}
+
+model Game {
+  id             Int     @id @default(autoincrement())
+  firstPlayerId  Int
+  firstPlayer    User    @relation("firstPlayer", fields: [firstPlayerId], references: [id])
+  secondPlayerId Int
+  secondPlayer   User    @relation("secondPlayer", fields: [secondPlayerId], references: [id])
+  winnerId       Int?
+  winner         User?   @relation("winner", fields: [winnerId], references: [id])
+  isEnded        Boolean @default(false)
+
+  @@index([winnerId])
+  @@index([firstPlayerId])
+  @@index([secondPlayerId])
+}
