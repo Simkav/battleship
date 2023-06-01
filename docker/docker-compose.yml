@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  redis:
+    container_name: ${REDIS_SERVICE_CONTAINER}
+    domainname: ${REDIS_SERVICE_CONTAINER}
+    build:
+      args:
+        - REDIS_PASS=${REDIS_PASS}
+      context: ../
+      dockerfile: docker/Dockerfile.redis
+    networks:
+      - battleship
+
+  api:
+    container_name: ${API_SERVICE_CONTAINER}
+    domainname: ${API_SERVICE_CONTAINER}
+    image: node:16.15.0
+    working_dir: /home/node/app
+    volumes:
+      - ../server:/home/node/app
+    environment:
+      - API_SERVICE_CONTAINER
+      - REDIS_SERVICE_CONTAINER
+      - DB_HOST
+      - DB_USER
+      - DB_PASS
+      - DB_DB
+      - DB_URL
+      - REDIS_PORT
+      - REDIS_PASS
+      - REDIS_HOST
+      - SENTRY_DSN
+    ports:
+      - 3000:3000
+    command: npm run start:dev
+    networks:
+      - battleship
+
+networks:
+  battleship:
+    driver: bridge

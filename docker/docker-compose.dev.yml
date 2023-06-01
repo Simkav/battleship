@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  redis:
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+      
+  # api:
+  #   container_name: ${API_SERVICE_CONTAINER}
+  #   domainname: ${API_SERVICE_CONTAINER}
+  #   image: node:16
+  #   working_dir: /home/node/app
+  #   volumes:
+  #     - src:/home/node/app
+  #   ports:
+  #     - ${API_PORT}:3000
+  #   command: npm run start:dev
+  #   networks:
+  #     - battleship
+
+networks:
+  battleship:
+    driver: bridge

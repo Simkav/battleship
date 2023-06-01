@@ -1,0 +1,10 @@
+.dockerignore
+server/node_modules
+server/dist
+npm-debug.log
+Dockerfile*
+.git
+.gitignore
+**/.*
+.env*
+Makefile
