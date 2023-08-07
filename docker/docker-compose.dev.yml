@@ -5,15 +5,15 @@ services:
     ports:
       - ${REDIS_PORT}:${REDIS_PORT}
       
-  # api:
+  api:
   #   container_name: ${API_SERVICE_CONTAINER}
   #   domainname: ${API_SERVICE_CONTAINER}
   #   image: node:16
   #   working_dir: /home/node/app
   #   volumes:
   #     - src:/home/node/app
-  #   ports:
-  #     - ${API_PORT}:3000
+    ports:
+      - 5555:5555
   #   command: npm run start:dev
   #   networks:
   #     - battleship

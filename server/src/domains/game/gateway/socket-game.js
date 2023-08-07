@@ -29,10 +29,7 @@ const socketPlugin = function (fastify, options, done) {
       return;
     }
     socket.join(userId);
-    socket.on(EventsEnum.JoinLobby, async (ships) => {
-      /* 
-      gameService.placeShip(socket.data[socketDataEnum.matchId], userId, ships);
-      */
+    socket.on(EventsEnum.JoinLobby, async () => {
       gameService.placeShip(socket.data[socketDataEnum.matchId], userId);
       const gameData = await gameService.checkIfPlayerAlreadyPlaying(userId)
       if (gameData) {
@@ -50,6 +47,7 @@ const socketPlugin = function (fastify, options, done) {
       }
     });
     socket.on(EventsEnum.Fire, (args) => {
+      console.log('EventsEnum.Fire')
       const { matchId, isMatchStarted, isShipsPlaced } = socketDataEnum
       const data = socket.data
       console.log(data)
@@ -73,7 +71,7 @@ const socketPlugin = function (fastify, options, done) {
 
     });
     socket.on(EventsEnum.PlaceShips, (args) => {
-      console.log('aboba')
+      console.log('EventsEnum.PlaceShips')
       gameService.placeShip(socket.data[socketDataEnum.matchId], userId, args);
     });
   });

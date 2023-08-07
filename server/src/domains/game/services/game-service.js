@@ -45,7 +45,7 @@ class GameService {
       );
       if (currentPlayer === null) throw new CustomError('Game not found');
       console.log(currentPlayer);
-      if (Number(currentPlayer) !== id) throw new CustomError('Not your move');
+      if (currentPlayer !== id) throw new CustomError('Not your move');
 
       const lockKey = this._ENUM.lockSlug + matchSlugWithId;
       const isLocked = await this._redis.set(lockKey, '', 'EX', 2, 'NX');
@@ -119,9 +119,12 @@ class GameService {
 
   async placeShip(matchId, id, ships) {
     try {
+      console.log('matchId', matchId)
+      console.log('id', id)
+      console.log('ships', ships)
 
       const matchSlugWithId = `${this._ENUM.matchSlug}${matchId}`;
-      const currentPlayer = +(await this._redis.hget(
+      const currentPlayer = (await this._redis.hget(
         matchSlugWithId,
         this._ENUM.currentPlayerKeyName
       ));
@@ -169,14 +172,15 @@ class GameService {
       this._io.to(id).emit(EventsEnum.ShipsSucsPlaced);
       const [userSocket] = this._io.adapter.rooms.get(id);
       this._io.sockets.get(userSocket).data[socketDataEnum.isShipsPlaced] = true
+      console.log(shipsPlacedPlayers, 'ADASDASDQWEQWEQWEQWE')
       if (!shipsPlacedPlayers.includes(String(oponentId))) {
-        this._io.to(Number(oponentId)).emit(EventsEnum.AskToPlaceShip);
+        this._io.to(oponentId).emit(EventsEnum.AskToPlaceShip);
       } else {
         const match = this._io.adapter.rooms.get(matchSlugWithId);
         for (const id of match.values()) this._io.sockets.get(id).data[socketDataEnum.isMatchStarted] = true
         this._io
           .to(String(matchSlugWithId))
-          .emit(EventsEnum.StartGame, { currentPlayer: Number(oponentId) });
+          .emit(EventsEnum.StartGame, { currentPlayer: oponentId });
       }
       await this._redis.set(
         this._ENUM.shadowKey + matchSlugWithId,
@@ -185,6 +189,10 @@ class GameService {
         30
       );
     } catch (error) {
+      console.log(error, `dsadas
+      asdasd
+      asdasd
+      asd`)
       if (error instanceof CustomError) {
         this._io.to(id).emit(EventsEnum.Error, error.message, error.data);
       }
@@ -192,6 +200,7 @@ class GameService {
       console.error(error);
     }
   }
+
 
   async _getOponentId(matchId, id) {
     const players = await this._redis.hget(
@@ -227,14 +236,14 @@ class GameService {
     );
     await this._clearLocks(keysToDelete);
     await this._db.game.update({
-      where: { id: Number(matchId) },
-      data: { isEnded: true, winnerId: Number(winnerId) },
+      where: { id: matchId },
+      data: { isEnded: true, winnerId: winnerId },
     });
     console.log(`Match : ${matchId} ended, winner : ${winnerId}`);
     const matchSlugWithId = this._ENUM.matchSlug + matchId;
     this._io
       .to(String(matchSlugWithId))
-      .emit(EventsEnum.EndGame, { winner: Number(winnerId) });
+      .emit(EventsEnum.EndGame, { winner: winnerId });
   }
 
   async checkIfPlayerAlreadyPlaying(playerId) {
@@ -270,7 +279,7 @@ class GameService {
       [socketDataEnum.matchId]: matchSlugWithId, [socketDataEnum.isMatchStarted]: shipsPlacedPlayers.length === 2,
       [socketDataEnum.isShipsPlaced]: shipsPlacedPlayers.includes(String(userId))
     }
-    const returnedData = { currentPlayer: Number(currentPlayer), playerData, oponentData, matchId }
+    const returnedData = { currentPlayer: currentPlayer, playerData, oponentData, matchId }
     return [returnedData, socketData]
   }
 
@@ -302,10 +311,11 @@ class GameService {
         return;
       }
       const userIds = sockets.map((socket) => socket.data.userId);
+      console.log(userIds)
       const { id } = await this._db.game.create({
         data: {
-          firstPlayerId: Number(userIds[0]),
-          secondPlayerId: Number(userIds[1]),
+          firstPlayerId: userIds[0],
+          secondPlayerId: userIds[1],
         },
         select: { id: true },
       });
@@ -338,11 +348,11 @@ class GameService {
       sockets.forEach((socket) => {
         socket.emit(EventsEnum.MatchCreated, {
           id,
-          currentPlayer: Number(userIds[0]),
+          currentPlayer: userIds[0],
         });
       });
       const firstSocket = sockets.find((socket) =>
-        socket.data.userId == Number(userIds[0])
+        socket.data.userId == userIds[0]
       )
       firstSocket.emit(OutcomingEventsEnum.AskToPlaceShip)
       console.log('game started');
