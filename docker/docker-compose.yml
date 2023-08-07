@@ -22,10 +22,6 @@ services:
     environment:
       - API_SERVICE_CONTAINER
       - REDIS_SERVICE_CONTAINER
-      - DB_HOST
-      - DB_USER
-      - DB_PASS
-      - DB_DB
       - DB_URL
       - REDIS_PORT
       - REDIS_PASS
