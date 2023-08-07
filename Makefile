@@ -13,7 +13,7 @@ help: ## Show this help
 #Actions --------------------------------------------------
 check: ## Check your configuration
 	docker-compose $(COMPOSE_CONFIG) config
-up: ## Start all containers (in background)
+up: down ## Start all containers (in background)
 	docker-compose $(COMPOSE_CONFIG) up --build --no-recreate -d
 down: ## Stop all started containers
 	docker-compose $(COMPOSE_CONFIG) down
@@ -24,8 +24,29 @@ restart:  ## Restart all started containers
 #Exec --------------------------------------------------
 api_exec: ## exec bash on api container
 	docker exec -it $(API_SERVICE_CONTAINER) bash
+---------------: ## ------[ Initial ]---------
+#Initial --------------------------------------------------
+init: down client_init server_init prisma_init ## Init whole project
+	echo 'All done'
+client_init: ## Init client
+	echo 'Init Client'
+	cd client;npm i
+	echo 'Client initialization successful'
+server_init: ## Init server
+	echo 'Init Server'
+	cd server;npm i
+	echo 'Server initialization successful'
+prisma_init: ## Init prisma client
+	echo 'Init prisma client'
+	docker-compose $(COMPOSE_CONFIG) run --no-deps api npx prisma generate
+	echo 'Prisma client initialization successful'
 
 ---------------: ## ------[ LOGS ]---------
 #Logs --------------------------------------------------
 api_log: ## Show log from api container
 	docker logs -tf -n 1000 $(API_SERVICE_CONTAINER)
+
+---------------: ## ------[ PRISMA ]---------
+#Prisma --------------------------------------------------
+prisma_push: down ## Push prisma schema to db
+	docker-compose $(COMPOSE_CONFIG) run --no-deps api npx prisma migrate deploy
