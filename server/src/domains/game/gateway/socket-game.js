@@ -7,6 +7,11 @@ const socketDataEnum = require('../../../enum/socket-data-enum');
 
 const baseSocketData = Object.fromEntries(Object.keys(socketDataEnum).map(key => [key, null]))
 
+const disconnectSocket = (socket, event) => {
+  socket.emit(event);
+  socket.disconnect();
+}
+
 
 /**
  *
@@ -15,17 +20,19 @@ const baseSocketData = Object.fromEntries(Object.keys(socketDataEnum).map(key =>
 const socketPlugin = function (fastify, options, done) {
   const namespace = fastify.gameNamespace;
   const gameService = fastify.gameService;
-  namespace.on('connect', (socket) => {
+  const userService = fastify.userService;
+  namespace.on('connect', async (socket) => {
     socket.data = { ...baseSocketData }
-    console.log('new socket' + socket.id);
     const userId = socket.handshake.auth.userId;
-    console.log(userId);
+    const user = await userService.findUser(userId)
+    if (user === null) {
+      disconnectSocket(socket, OutcomingEventsEnum.UserNotFound)
+      return
+    }
     socket.data.userId = userId;
-    // TODO validattion
     const connectedUserId = namespace.adapter.rooms.get(userId);
     if (connectedUserId !== undefined && connectedUserId.size >= 1) {
-      socket.emit(OutcomingEventsEnum.UserAlreadyJoined);
-      socket.disconnect();
+      disconnectSocket(socket, OutcomingEventsEnum.UserAlreadyJoined)
       return;
     }
     socket.join(userId);
@@ -79,4 +86,4 @@ const socketPlugin = function (fastify, options, done) {
   done();
 };
 
-module.exports = fp(socketPlugin, { dependencies: ['gameService'] });
+module.exports = fp(socketPlugin, { dependencies: ['gameService', 'userService'] });

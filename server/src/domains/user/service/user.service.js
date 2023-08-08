@@ -8,6 +8,10 @@ class UserService {
         this._db = db;
     }
 
+    async findUser(userId) {
+        await this._db.user.findUnique({ where: { id: userId } })
+    }
+
     _createHash(text) {
         const hash = crypto.createHash('sha256').update(text).digest('base64')
         return hash

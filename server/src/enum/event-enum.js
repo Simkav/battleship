@@ -15,7 +15,8 @@ const ServerEventsEnum = {
   MatchCreated: 'match-created',
   StartGame: 'game-start',
   EndGame: 'game-end',
-  ReconectToGame: 'reconect-to-game'
+  ReconectToGame: 'reconect-to-game',
+  UserNotFound: 'user-not-found'
 };
 
 module.exports = { IncomingEventsEnum: ClientEventsEnum, OutcomingEventsEnum: ServerEventsEnum };

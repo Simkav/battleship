@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { default: fp } = require('fastify-plugin');
+const { userAuthSchema } = require('../schemas/userAuthSchema');
 
 /**
  *
@@ -8,24 +9,14 @@ const { default: fp } = require('fastify-plugin');
 const userController = async (fastify, options, done) => {
     const service = fastify.userService
     fastify.post('/auth/login', {
-        schema: {
-            body: {
-                type: 'object', properties:
-                    { email: { type: 'string' }, password: { type: 'string' } }
-            }
-        }
+        schema: userAuthSchema
     }, async (request, reply) => {
         const user = await service.login(request.body)
         request.session.user = user
         reply.code(200).send({ user })
     })
     fastify.post('/auth/register', {
-        schema: {
-            body: {
-                type: 'object', properties:
-                    { email: { type: 'string' }, password: { type: 'string' } }
-            }
-        }
+        schema: userAuthSchema
     }, async (request, reply) => {
         const user = await service.register(request.body)
         request.session.user = user
